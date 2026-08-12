@@ -117,7 +117,6 @@ router.post("/signin", async (req, res) => {
 });
 
 router.get("/bulk", authMiddleware, async (req, res) => {
-
     const filter = req.query.filter || "";
 
     const users = await User.find({
@@ -138,13 +137,13 @@ router.get("/bulk", authMiddleware, async (req, res) => {
     });
 
     res.json({
-        user: users.map(user => ({
+        users: users.map(user => ({
             username: user.username,
             firstname: user.firstname,
             lastname: user.lastname,
             _id: user._id
         }))
-    })
+    });
 });
 
 module.exports = router;
