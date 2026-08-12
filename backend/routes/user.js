@@ -2,6 +2,7 @@ const express = require("express");
 const jwt = require("jsonwebtoken");
 const { User } = require("../db");
 const JWT_SECRET = require("../config");
+const { authMiddleware } = require("../middleware");
 const { signupSchema, signinSchema } = require("../types");
 const bcrypt = require("bcrypt");
 const router = express.Router();
@@ -113,6 +114,37 @@ router.post("/signin", async (req, res) => {
             message: "Internal server error"
         });
     }
+});
+
+router.get("/bulk", authMiddleware, async (req, res) => {
+
+    const filter = req.query.filter || "";
+
+    const users = await User.find({
+        $or: [
+            {
+                firstname: {
+                    $regex: filter,
+                    $options: "i"
+                }
+            },
+            {
+                lastname: {
+                    $regex: filter,
+                    $options: "i"
+                }
+            }
+        ]
+    });
+
+    res.json({
+        user: users.map(user => ({
+            username: user.username,
+            firstname: user.firstname,
+            lastname: user.lastname,
+            _id: user._id
+        }))
+    })
 });
 
 module.exports = router;
