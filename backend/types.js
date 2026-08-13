@@ -13,7 +13,14 @@ const signinSchema = z.object({
     password: z.string()
 });
 
+const updateBody = z.object({
+    password: z.string().optional(),
+    firstname: z.string().optional(),
+    lastname: z.string().optional()
+});
+
 module.exports = {
     signupSchema,
-    signinSchema
+    signinSchema,
+    updateBody  
 }
