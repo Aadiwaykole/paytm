@@ -32,6 +32,22 @@ const transferFunds = async (fromAccountId, toAccountId, amount) => {
             }
         );
 
+   const receiverUpdate = await Account.updateOne(
+    {
+        userId: to
+    },
+    {
+        $inc: {
+            balance: amount
+        }
+    },
+    {
+        session
+    }
+);
+
+console.log("Receiver update:", receiverUpdate);
+
         await session.commitTransaction();
 
         console.log("Transaction successful");
@@ -51,4 +67,4 @@ const transferFunds = async (fromAccountId, toAccountId, amount) => {
     }
 };
 
-module.exports = {      transferFunds};
+module.exports = { transferFunds };

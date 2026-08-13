@@ -19,8 +19,14 @@ const updateBody = z.object({
     lastname: z.string().optional()
 });
 
+const transferSchema = z.object({
+    to: z.string(),
+    amount: z.number().positive()
+});
+
 module.exports = {
     signupSchema,
     signinSchema,
-    updateBody  
+    updateBody  ,
+    transferSchema
 }
