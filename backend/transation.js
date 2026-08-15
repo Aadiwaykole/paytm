@@ -6,8 +6,10 @@ const transferFunds = async (fromAccountId, toAccountId, amount) => {
     const session = await mongoose.startSession();
 
     try {
+
         session.startTransaction();
 
+        // Deduct money from sender
         await Account.findByIdAndUpdate(
             fromAccountId,
             {
@@ -20,6 +22,7 @@ const transferFunds = async (fromAccountId, toAccountId, amount) => {
             }
         );
 
+        // Add money to receiver
         await Account.findByIdAndUpdate(
             toAccountId,
             {
@@ -31,22 +34,6 @@ const transferFunds = async (fromAccountId, toAccountId, amount) => {
                 session
             }
         );
-
-   const receiverUpdate = await Account.updateOne(
-    {
-        userId: to
-    },
-    {
-        $inc: {
-            balance: amount
-        }
-    },
-    {
-        session
-    }
-);
-
-console.log("Receiver update:", receiverUpdate);
 
         await session.commitTransaction();
 

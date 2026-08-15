@@ -3,6 +3,7 @@ const jwt = require("jsonwebtoken");
 const { User, Account } = require("../db");
 const mongoose = require("mongoose");
 const JWT_SECRET = require("../config");
+const { transferFunds } = require("../transaction");
 const { authMiddleware } = require("../middleware");
 const { signupSchema, signinSchema, updateBody, transferSchema } = require("../types");
 const bcrypt = require("bcrypt");
@@ -237,19 +238,28 @@ router.put("/", authMiddleware, async (req, res) => {
 }
 
             // NEXT: deduct sender's balance
-            await Account.updateOne(
-                {
-                    userId: req.userId
-                },
-                {
-                    $inc: {
-                        balance: -amount
-                    }
-                },
-                {
-                    session
-                }
-            );
+         const receiverUpdate = await Account.updateOne(
+    {
+        userId: to
+    },
+    {
+        $inc: {
+            balance: amount
+        }
+    },
+    {
+        session
+    }
+);
+
+
+if (receiverUpdate.matchedCount === 0) {
+    await session.abortTransaction();
+
+    return res.status(400).json({
+        message: "Receiver account not found"
+    });
+}
 
             await session.commitTransaction();
 
