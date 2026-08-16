@@ -3,7 +3,7 @@ const jwt = require("jsonwebtoken");
 const { User, Account } = require("../db");
 const mongoose = require("mongoose");
 const JWT_SECRET = require("../config");
-const { transferFunds } = require("../transaction");
+// const { transferFunds } = require("../transaction");
 const { authMiddleware } = require("../middleware");
 const { signupSchema, signinSchema, updateBody, transferSchema } = require("../types");
 const bcrypt = require("bcrypt");
@@ -183,100 +183,110 @@ router.put("/", authMiddleware, async (req, res) => {
     }
 });
 
-    router.post("/transfer", authMiddleware, async (req, res) => {
-        const session = await mongoose.startSession();
+router.post("/transfer", authMiddleware, async (req, res) => {
+    const session = await mongoose.startSession();
 
-        try {
-            session.startTransaction();
+    try {
+        session.startTransaction();
 
-            const { to, amount } = req.body;
+        const { to, amount } = req.body;
 
-            const {success} = transferSchema.safeParse(req.body);
+        const { success } = transferSchema.safeParse(req.body);
 
-            if(!success){
-
-                await session.abortTransaction(); 
-
-                return res.status(400).json({
-                    message:"Invalid transfer input"
-                });
-            }
-
-            const account = await Account.findOne({
-                userId: req.userId
-            }).session(session);
-
-            if (!account || account.balance < amount) {
-                await session.abortTransaction();
-
-                return res.status(400).json({
-                    message: "Insufficient balance"
-                });
-            }
-
-            const receiver = await Account.findOne({
-                userId: to
-            }).session(session); 
-
-
-            if(!receiver){
-
-                await session.abortTransaction();
-
-                return res.status(400).json({
-                    message:"receiver account not found "
-                })
-            }
-
-
-            if (req.userId === to) {
-    await session.abortTransaction();
-
-    return res.status(400).json({
-        message: "Cannot transfer money to yourself"
-    });
-}
-
-            // NEXT: deduct sender's balance
-         const receiverUpdate = await Account.updateOne(
-    {
-        userId: to
-    },
-    {
-        $inc: {
-            balance: amount
-        }
-    },
-    {
-        session
-    }
-);
-
-
-if (receiverUpdate.matchedCount === 0) {
-    await session.abortTransaction();
-
-    return res.status(400).json({
-        message: "Receiver account not found"
-    });
-}
-
-            await session.commitTransaction();
-
-            res.json({
-                message:"Transfer successfull "
-            })
-        } catch (err) {
+        if (!success) {
 
             await session.abortTransaction();
 
-            res.status(500).json({
-                messaage:"transfer failed"
+            return res.status(400).json({
+                message: "Invalid transfer input"
             });
-
-            // we'll handle this next
-        }finally {
-            session.endSession(); 
         }
-    });
+
+        const account = await Account.findOne({
+            userId: req.userId
+        }).session(session);
+
+        if (!account || account.balance < amount) {
+            await session.abortTransaction();
+
+            return res.status(400).json({
+                message: "Insufficient balance"
+            });
+        }
+
+        const receiver = await Account.findOne({
+            userId: to
+        }).session(session);
+
+
+        if (!receiver) {
+
+            await session.abortTransaction();
+
+            return res.status(400).json({
+                message: "receiver account not found "
+            })
+        }
+
+
+        if (req.userId === to) {
+            await session.abortTransaction();
+
+            return res.status(400).json({
+                message: "Cannot transfer money to yourself"
+            });
+        }
+
+        // NEXT: deduct sender's balance
+        const senderUpdate = await Account.updateOne(
+            {
+                userId: req.userId
+            },
+            {
+                $inc: {
+                    balance: -amount
+                }
+            },
+            {
+                session
+            }
+        );
+
+        console.log("SENDER UPDATE:", senderUpdate);
+
+
+        const receiverUpdate = await Account.updateOne(
+            {
+                userId: to
+            },
+            {
+                $inc: {
+                    balance: amount
+                }
+            },
+            {
+                session
+            }
+        );
+
+        console.log("RECEIVER UPDATE:", receiverUpdate);
+
+        await session.commitTransaction();
+
+        res.json({
+            message: "Transfer successfull "
+        })
+    } catch (err) {
+
+        await session.abortTransaction();
+
+        res.status(500).json({
+            messaage: "transfer failed"
+        });
+
+        // we'll handle this next
+    } finally {
+        session.endSession();
+    }
+});
 module.exports = router;
