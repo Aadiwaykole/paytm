@@ -1,87 +1,66 @@
-import { useState } from "react";
-import axios from "axios";
-
-function App() {
-  const [formData, setFormData] = useState({
-    username: "",
-    password: "",
-    firstname: "",
-    lastname: "",
-  });
-
-  const handleChange = (e) => {
-    setFormData({
-      ...formData,
-      [e.target.name]: e.target.value,
-    });
-  };
-
-  const handleSignup = async (e) => {
-    e.preventDefault();
-
-    try {
-      const response = await axios.post(
-        "http://localhost:3000/api/v1/user/signup",
-        formData
-      );
-
-      console.log(response.data);
-
-      alert("Signup successful!");
-    } catch (error) {
-      console.error(error);
-
-      alert(
-        error.response?.data?.message || "Signup failed"
-      );
-    }
-  };
-
+function Signup() {
   return (
-    <div>
-      <h1>Paytm Signup</h1>
+    <div className="signup-page">
+      <div className="signup-card">
 
-      <form onSubmit={handleSignup}>
+        <div className="logo">
+          Pay<span>tm</span>
+        </div>
 
-        <input
-          type="text"
-          name="firstname"
-          placeholder="First Name"
-          value={formData.firstname}
-          onChange={handleChange}
-        />
+        <h1>Create your account</h1>
 
-        <input
-          type="text"
-          name="lastname"
-          placeholder="Last Name"
-          value={formData.lastname}
-          onChange={handleChange}
-        />
+        <p className="subtitle">
+          Send money quickly and securely.
+        </p>
 
-        <input
-          type="text"
-          name="username"
-          placeholder="Username"
-          value={formData.username}
-          onChange={handleChange}
-        />
+        <form>
+          <div className="name-row">
+            <div className="input-group">
+              <label>First Name</label>
+              <input
+                type="text"
+                placeholder="Aditya"
+              />
+            </div>
 
-        <input
-          type="password"
-          name="password"
-          placeholder="Password"
-          value={formData.password}
-          onChange={handleChange}
-        />
+            <div className="input-group">
+              <label>Last Name</label>
+              <input
+                type="text"
+                placeholder="Waykole"
+              />
+            </div>
+          </div>
 
-        <button type="submit">
-          Signup
-        </button>
+          <div className="input-group">
+            <label>Username</label>
+            <input
+              type="text"
+              placeholder="Enter your username"
+            />
+          </div>
 
-      </form>
+          <div className="input-group">
+            <label>Password</label>
+            <input
+              type="password"
+              placeholder="Enter your password"
+            />
+          </div>
+
+          <button type="submit">
+            Create Account
+          </button>
+        </form>
+
+        <p className="login-text">
+          Already have an account?{" "}
+          <span>Sign in</span>
+        </p>
+
+      </div>
     </div>
   );
 }
 
-export default App;
+export default Signup;
