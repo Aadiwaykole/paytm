@@ -1,66 +1,52 @@
-function Signup() {
-  return (
-    <div className="signup-page">
-      <div className="signup-card">
+import { BrowserRouter, Navigate, Route, Routes } from "react-router-dom";
+import { AuthProvider, useAuth } from "./context/AuthContext";
+import ProtectedRoute from "./components/ProtectedRoute";
+import Signup from "./pages/Signup";
+import Signin from "./pages/Signin";
+import Dashboard from "./pages/Dashboard";
+import SendMoney from "./pages/SendMoney";
+import Profile from "./pages/Profile";
 
-        <div className="logo">
-          Pay<span>tm</span>
-        </div>
-
-        <h1>Create your account</h1>
-
-        <p className="subtitle">
-          Send money quickly and securely.
-        </p>
-
-        <form>
-          <div className="name-row">
-            <div className="input-group">
-              <label>First Name</label>
-              <input
-                type="text"
-                placeholder="Aditya"
-              />
-            </div>
-
-            <div className="input-group">
-              <label>Last Name</label>
-              <input
-                type="text"
-                placeholder="Waykole"
-              />
-            </div>
-          </div>
-
-          <div className="input-group">
-            <label>Username</label>
-            <input
-              type="text"
-              placeholder="Enter your username"
-            />
-          </div>
-
-          <div className="input-group">
-            <label>Password</label>
-            <input
-              type="password"
-              placeholder="Enter your password"
-            />
-          </div>
-
-          <button type="submit">
-            Create Account
-          </button>
-        </form>
-
-        <p className="login-text">
-          Already have an account?{" "}
-          <span>Sign in</span>
-        </p>
-
-      </div>
-    </div>
-  );
+function RootRedirect() {
+  const { isAuthenticated } = useAuth();
+  return <Navigate to={isAuthenticated ? "/dashboard" : "/signin"} replace />;
 }
 
-export default Signup;
+export default function App() {
+  return (
+    <AuthProvider>
+      <BrowserRouter>
+        <Routes>
+          <Route path="/" element={<RootRedirect />} />
+          <Route path="/signup" element={<Signup />} />
+          <Route path="/signin" element={<Signin />} />
+          <Route
+            path="/dashboard"
+            element={
+              <ProtectedRoute>
+                <Dashboard />
+              </ProtectedRoute>
+            }
+          />
+          <Route
+            path="/send"
+            element={
+              <ProtectedRoute>
+                <SendMoney />
+              </ProtectedRoute>
+            }
+          />
+          <Route
+            path="/profile"
+            element={
+              <ProtectedRoute>
+                <Profile />
+              </ProtectedRoute>
+            }
+          />
+          <Route path="*" element={<Navigate to="/" replace />} />
+        </Routes>
+      </BrowserRouter>
+    </AuthProvider>
+  );
+}

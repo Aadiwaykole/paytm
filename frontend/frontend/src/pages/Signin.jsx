@@ -1,18 +1,13 @@
 import { useState } from "react";
 import { Link, useNavigate } from "react-router-dom";
-import { signup } from "../api/client";
+import { signin } from "../api/client";
 import { useAuth } from "../context/AuthContext";
 import Logo from "../components/Logo";
 
-export default function Signup() {
+export default function Signin() {
   const navigate = useNavigate();
   const { login } = useAuth();
-  const [formData, setFormData] = useState({
-    firstname: "",
-    lastname: "",
-    username: "",
-    password: "",
-  });
+  const [formData, setFormData] = useState({ username: "", password: "" });
   const [error, setError] = useState("");
   const [loading, setLoading] = useState(false);
 
@@ -27,11 +22,11 @@ export default function Signup() {
     setError("");
 
     try {
-      const response = await signup(formData);
+      const response = await signin(formData);
       login(response.data.token);
       navigate("/dashboard");
     } catch (err) {
-      setError(err.response?.data?.message || "Signup failed. Please try again.");
+      setError(err.response?.data?.message || "Sign in failed. Please try again.");
     } finally {
       setLoading(false);
     }
@@ -41,39 +36,12 @@ export default function Signup() {
     <div className="auth-page">
       <div className="auth-card">
         <Logo />
-        <h1>Create your account</h1>
-        <p className="subtitle">Send money quickly and securely.</p>
+        <h1>Welcome back</h1>
+        <p className="subtitle">Sign in to your Paytm account.</p>
 
         {error && <div className="alert alert-error">{error}</div>}
 
         <form onSubmit={handleSubmit}>
-          <div className="name-row">
-            <div className="input-group">
-              <label htmlFor="firstname">First Name</label>
-              <input
-                id="firstname"
-                type="text"
-                name="firstname"
-                placeholder="Aditya"
-                value={formData.firstname}
-                onChange={handleChange}
-                required
-              />
-            </div>
-            <div className="input-group">
-              <label htmlFor="lastname">Last Name</label>
-              <input
-                id="lastname"
-                type="text"
-                name="lastname"
-                placeholder="Waykole"
-                value={formData.lastname}
-                onChange={handleChange}
-                required
-              />
-            </div>
-          </div>
-
           <div className="input-group">
             <label htmlFor="username">Username</label>
             <input
@@ -93,21 +61,20 @@ export default function Signup() {
               id="password"
               type="password"
               name="password"
-              placeholder="Min. 6 characters"
+              placeholder="Enter your password"
               value={formData.password}
               onChange={handleChange}
               required
-              minLength={6}
             />
           </div>
 
           <button type="submit" className="btn-primary" disabled={loading}>
-            {loading ? "Creating account..." : "Create Account"}
+            {loading ? "Signing in..." : "Sign In"}
           </button>
         </form>
 
         <p className="auth-footer">
-          Already have an account? <Link to="/signin">Sign in</Link>
+          Don&apos;t have an account? <Link to="/signup">Create one</Link>
         </p>
       </div>
     </div>
